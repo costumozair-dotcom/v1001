@@ -122,8 +122,8 @@ def create_app():
             from services.production_search_manager import production_search_manager
             from database import db_manager
 
-            ai_status = ai_manager.get_provider_status()
-            search_status = production_search_manager.get_provider_status()
+            ai_status = ai_manager.get_provider_status() if ai_manager else {}
+            search_status = production_search_manager.get_provider_status() if production_search_manager else {}
             db_status = db_manager.test_connection()
 
             return jsonify({
@@ -132,12 +132,12 @@ def create_app():
                 'version': '2.0.0',
                 'services': {
                     'ai_providers': {
-                        'available': len([p for p in ai_status.values() if p['available']]),
+                        'available': len([p for p in ai_status.values() if isinstance(p, dict) and p.get('available')]) if ai_status else 0,
                         'total': len(ai_status),
                         'providers': ai_status
                     },
                     'search_providers': {
-                        'available': len([p for p in search_status.values() if p['available']]),
+                        'available': len([p for p in search_status.values() if isinstance(p, dict) and p.get('available')]) if search_status else 0,
                         'total': len(search_status),
                         'providers': search_status
                     },
